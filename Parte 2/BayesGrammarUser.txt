@@ -1,0 +1,26 @@
+//to compile: java -Xmx500M -cp antlr-4.5.1-complete.jar org.antlr.v4.Tool -Dlanguage=Python2 BayesGrammar.txt
+grammar BayesGrammarUser;
+
+
+fragment LETTER : ('a'..'z'|'A'..'Z') ;
+
+NEGATION: '!';
+TOKEN:  LETTER;
+
+WS : [\t\r\n\f ]+ -> skip;
+
+COMMENT
+    :   ( '//' ~[\r\n]* '\r'? '\n'	
+        | '/*' .*? '*/'	
+        ) -> skip
+    ;								
+
+//PARSER
+program
+	: probability
+	;
+probability: ('P'|'p') '(' op (condition  op)?  ')';
+condition: ('|'); 
+negation: NEGATION;
+operator: negation? TOKEN ;
+op: operator (',' operator)* ;
