@@ -1,0 +1,8 @@
+spam	offer is secret
+spam	clic secret link
+spam	secret sports link
+ham	play sports today
+spam	ham	went play sports
+spam	ham	secret sports event
+ham	ham	sports is today
+spam	ham	sports cost money

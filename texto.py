@@ -2,7 +2,7 @@ from collections import defaultdict
 from decimal import Decimal as dec
 from fractions import Fraction as frac
 
-grb = ['\n','\r','.',',',';']
+grb = ['\n','\t','\r','.',',',';']
 
 def lectura(nombre):
     documento = open(nombre,'rb')
@@ -38,10 +38,9 @@ def fromLineToArray(line):
 
 
 def construccion(line):
-    line = clearString(line)
     val = line.split("\t")
     if len(val) == 2: #existe solo un \t
-        words = val[1].lower().split(' ') #obtengo el texto a analizar separado por espacios
+        words = clearString(val[1]).lower().split(' ') #obtengo el texto a analizar separado por espacios
         if '' in words:
             words.remove('')
         count = defaultdict(int)
@@ -65,14 +64,20 @@ def fromCountToProb(wordsP, spamWP):#dicionario de palabras con el conteo
 
 #wordsP dictionary
 #P(word|depen) return
-def getProb(wordsP, word, depen):
+def getProb(wordsP, word,spamP, depen,k):
+    if depen == '!spam': depen = 'ham'
     if word in wordsP.keys():
          if depen in wordsP[word].keys():
-             return wordsP[word][depen] 
-    return frac(0,1)
+             return frac(wordsP[word][depen]+k,spamP[depen]+2*k)#deberia ser la cantidad de palabras 
+    return frac(0+k,spamP[depen]+2*k)
 
 #probabilidad de frase:
-def getProbFromPhrase(phrase, wordsP, spamP, k):
+#phrase es la frase 
+#wordsP es la cantidad de palabras en spam o ham
+#spamP es la probabilidad 0.0 de ocurrencia
+#spamC es la cantidad de palabras por spamC
+#k 
+def getProbFromPhrase(phrase, wordsP, spamP,spamC, k):
     phrase = clearString(phrase)
     words = phrase.lower().split(' ')
     if '' in words:
@@ -80,9 +85,10 @@ def getProbFromPhrase(phrase, wordsP, spamP, k):
     probS = spamP['spam']
     probH = spamP['!spam']
     for word in words:
-        probS = probS * getProb(wordsP, word, 'spam')
-        probH = probH * getProb(wordsP, word, '!spam')
-    return frac(probS+int(k),(probS+probH)+2*int(k))
+        probS = probS * getProb(wordsP, word,spamC, 'spam', k)
+        probH = probH * getProb(wordsP, word,spamC, '!spam', k)
+    
+    return frac(probS,probS+probH)
 
 def clearString(string):
     for char in grb:
